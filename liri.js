@@ -1,72 +1,51 @@
 require("dotenv").config();
-var keys = require("./keys.js");
-var Spotify = require('node-spotify-api');
+var keys = require("./keys.js")
 var Twitter = require('twitter');
-var request = require("request");
+var Spotify = require('node-spotify-api');
+var request = require("request")
 var fs = require("fs");
-
-var client = new Twitter(keys.twitter);
 var spotify = new Spotify(keys.spotify);
+var client = new Twitter(keys.twitter);
+var command = process.argv[2]
 
-
-var parameter = process.argv[2];
-
-if (parameter === "my-tweets") {
-    console.log("tweet function");
-    myTweet();
-} else if (parameter === "spotify-this-song") {
-    console.log("spotify function");
-    mySpotify();
-} else if (parameter === "do-what-it-says") {
-    console.log("random function");
-    myRandom();
-} else {
-    console.log("enter a value");
-}
-
-function myTweet() {
-    var params = {
-        q: 'Billymountain',
-        count: 20
-    }
-}
-
-client.get('search/tweets', params, function (error, tweets, response) {
-    for (var i = 0; i < (tweet.status).length; i++) {
-        console.log("\nBillymountain says:" + tweet.status[i].text);
-    }
-});
-
-function mySpotify() {
-    var songName = "";
-    nodeArrg = process.argv;
-    if (nodeArrg.length === 3) {
-        songName = "Feeling This";
-    } else {
-        for (var i = 3; i < nodeArrg.length; i++) {
-            if (i > 3 && i < nodeArrg.length) {
-                songName = songName + "+" + nodeArrg[i];
-
-            } else {
-                songName += nodeArrg[i];
+if (command === "my-tweets") {
+    fs.appendFile("log.txt", " my-tweets: ", function (err) {
+    });
+    var params = { screen_name: 'Billymountain' };
+    client.get('statuses/user_timeline', params, function (error, tweets, response) {
+        if (!error) {
+            for (let i = 0; i < tweets.length; i++) {
+                console.log(tweets[i].text);
+                fs.appendFile("log.txt", " " + tweets[i].text + ",", function (err) {
+                });
             }
         }
-    }
+    });
 }
 
-spotify.search({
-            type: 'track',
-            query: songName
-        }, function (err, data) {
-            if (err) {
-                console.log('Error:' + err);
-
-            } else {
-                var song_data = data.tracks.items[0];
-                console.log("\nArtist:" + song_data.artists[0].name);
-                console.log("\nSong name is  : " + song_data.name);
-                console.log("\nPreview : " + song_data.preview_url);
-                console.log("\nAlbum is : " + song_data.album.name + "\n");
-            };
+if (command === "spotify-this-song") {
+    fs.appendFile("log.txt", " spotify-this-song: ", function (err) {
+    });
+    var song = "Feeling This"
+    if (process.argv[3]) {
+        process.argv.splice(0, 3)
+        song = process.argv.join(" ")
+    }
+    spotify.search({ type: 'track', query: song }, function (err, data) {
+        if (err) {
+            return console.log('Error occurred: ' + err);
+        }
+        console.log(data.tracks.items[0].artists[0].name)
+        fs.appendFile("log.txt", " " + data.tracks.items[0].artists[0].name + ",", function (err) {
         });
-    
+        console.log(data.tracks.items[0].name)
+        fs.appendFile("log.txt", " " + data.tracks.items[0].name + ",", function (err) {
+        });
+        console.log(data.tracks.items[0].external_urls.spotify)
+        fs.appendFile("log.txt", " " + data.tracks.items[0].external_urls.spotify + ",", function (err) {
+        });
+        console.log(data.tracks.items[0].album.name)
+        fs.appendFile("log.txt", " " + data.tracks.items[0].album.name, function (err) {
+        });
+    });
+}
